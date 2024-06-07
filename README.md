@@ -1,3 +1,20 @@
+# UDPATE
+Tried to make the original Compenent by T3m3z usable again. Just fixed the error messagas in Home Assistant, but unfortunatly, its still not working.
+
+In addition, found some undocumented settings in the component:
+
+```
+media_player:
+  - platform: vestel
+    host: IP_ADDRESS
+    name: OPTIONAL_NAME
+    tcp_port: OPTIONAL_TCP_PORT
+    ws_port: OPTIONAL_WS_PORT
+    timeout: OPTIONAL_TIMEOUT
+    sources: OPTIONAL_SOURCES_LIST
+    supports_power: OPTIONAL_SUPPORTS_POWER
+```
+
 # HA-Vestel-Component
 
 This Home Assistant custom component allows one to interface some of TV sets manufactured by Vestel. It has been tested only using Procaster LE-50F449.
