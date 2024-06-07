@@ -48,8 +48,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 })
 
 
-@asyncio.coroutine
-def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Setup the Vestel platform."""
     host = config.get(CONF_HOST)
 
@@ -105,9 +104,8 @@ class VestelDevice(MediaPlayerEntity):
 
         _LOGGER.info("Configured Vestel Device: %s", self._name)
 
-    @asyncio.coroutine
-    def async_send_key(self, key):
-        yield from self.device.sendkey(key)
+    async def async_send_key(self, key):
+        await self.device.sendkey(key)
 
     @property
     def state(self):
@@ -124,9 +122,8 @@ class VestelDevice(MediaPlayerEntity):
         """Boolean if volume is currently muted."""
         return self.device.get_muted()
 
-    @asyncio.coroutine
-    def async_update(self):
-        yield from self.device.update()
+    async def async_update(self):
+        await self.device.update()
         if self.device.get_state():
           self._state = STATE_PLAYING
         else:
@@ -159,102 +156,89 @@ class VestelDevice(MediaPlayerEntity):
             support &= ~SUPPORT_TURN_ON
         return support
 
-    @asyncio.coroutine
-    def async_turn_off(self):
+    async def async_turn_off(self):
         """Execute turn_off_action to turn off media player."""
         if self._state is not STATE_OFF:
-            yield from self.device.turn_off()
+            await self.device.turn_off()
             self._state = STATE_OFF
             self.hass.async_add_job(self.async_update_ha_state())
 
-    @asyncio.coroutine
-    def async_turn_on(self):
+    async def async_turn_on(self):
         """Execute turn_on_action to turn on media player."""
         if self._state is STATE_OFF:
-            yield from self.device.turn_on()
+            await self.device.turn_on()
             self._state = STATE_PLAYING
             self.hass.async_add_job(self.async_update_ha_state())
 
-    @asyncio.coroutine
-    def async_volume_up(self):
+    async def async_volume_up(self):
         """Volume up the media player."""
-        yield from self.device.volume_up()
+        await self.device.volume_up()
 
-    @asyncio.coroutine
-    def async_volume_down(self):
+    async def async_volume_down(self):
         """Volume down the media player."""
-        yield from self.device.volume_down()
+        await self.device.volume_down()
 
-    @asyncio.coroutine
-    def async_set_volume_level(self, volume):
+    async def async_set_volume_level(self, volume):
         """Set the volume of the media player."""
-        yield from self.device.set_volume(volume)
+        await self.device.set_volume(volume)
 
-    @asyncio.coroutine
-    def async_mute_volume(self, mute):
+    async def async_mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
-        yield from self.device.toggle_mute()
+        await self.device.toggle_mute()
 
-    @asyncio.coroutine
-    def async_media_play(self):
+    async def async_media_play(self):
         """Play media."""
-        yield from self.device.sendkey(1025)
+        await self.device.sendkey(1025)
         self._state = STATE_PLAYING
         self.hass.async_add_job(self.async_update_ha_state())
 
-    @asyncio.coroutine
-    def async_media_pause(self):
+    async def async_media_pause(self):
         """Pause the media player."""
-        yield from self.device.sendkey(1049)
+        await self.device.sendkey(1049)
         self._state = STATE_PAUSED  
         self.hass.async_add_job(self.async_update_ha_state())
 
-    @asyncio.coroutine
-    def async_media_stop(self):
+    async def async_media_stop(self):
         """Stop the media player."""
-        yield from self.device.sendkey(1024)
+        await self.device.sendkey(1024)
         self._state = STATE_STOP
         self.hass.async_add_job(self.async_update_ha_state())
 
-    @asyncio.coroutine
-    def async_media_next_track(self):
+    async def async_media_next_track(self):
         """Send next track command."""
-        yield from self.device.next_track()
+        await self.device.next_track()
 
-    @asyncio.coroutine
-    def async_media_previous_track(self):
+    async def async_media_previous_track(self):
         """Send next previous command."""
-        yield from self.device.previous_track()
+        await self.device.previous_track()
 
-    @asyncio.coroutine
-    def async_play_media(self, media_type, media_id, **kwargs):
+    async def async_play_media(self, media_type, media_id, **kwargs):
         """Send the play_media command to the media player."""
         if media_type == MEDIA_TYPE_CHANNEL:
             channel = int(media_id)
             if channel > 99:
-              yield from self.device.sendkey(1000 + int(channel/100))
+              await self.device.sendkey(1000 + int(channel/100))
             if channel > 9:
-              yield from self.device.sendkey(1000 + int(channel/10))
-            yield from self.device.sendkey(1000 - int(channel/10)*10 + channel)
-            yield from self.device.sendkey(1053)
+              await self.device.sendkey(1000 + int(channel/10))
+            await self.device.sendkey(1000 - int(channel/10)*10 + channel)
+            await self.device.sendkey(1053)
 
-    @asyncio.coroutine
-    def async_select_source(self, source):
+    async def async_select_source(self, source):
         """Select input source."""
         if self.source == "Netflix":
-            yield from self.device.stop_netflix()
-            yield from asyncio.sleep(3)
+            await self.device.stop_netflix()
+            await asyncio.sleep(3)
         elif self.source == "YouTube":
-            yield from self.device.stop_youtube()
-            yield from asyncio.sleep(3)
+            await self.device.stop_youtube()
+            await asyncio.sleep(3)
     
         if source == "YouTube":
-            yield from self.device.start_youtube()
+            await self.device.start_youtube()
         elif source == "Netflix":
-            yield from self.device.start_netflix()
+            await self.device.start_netflix()
         else:
-            yield from self.device.sendkey(1056)
-            yield from self.device.sendkey(1001 + self.source_list.index(source))
+            await self.device.sendkey(1056)
+            await self.device.sendkey(1001 + self.source_list.index(source))
         self._current_source = source
 
     @property
